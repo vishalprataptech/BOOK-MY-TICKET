@@ -10,10 +10,10 @@ import cookieParser from "cookie-parser";
 import express from "express";
 
 
-import authRoute from "./modules/auth/auth.routes.js";
-import ApiError from "./common/utils/api-error.js";
-import errorHandler from "./common/middleware/error.middleware.js";
-import ownerRoutes from "./modules/ipl-ms/routes/owner.routes.js"
+import authRoute from "./src/modules/auth/auth.routes.js";
+import ApiError from "./src/common/utiles/api-error.js";
+// import errorHandler from "./src/common/middleware/error.middleware.js";
+// import ownerRoutes from "./src/modules/ipl-ms/routes/owner.routes.js"
 
 // import express from "express";
 import pg from "pg";
@@ -47,13 +47,13 @@ app.use(cookieParser());
 app.use(cors());
 
 app.use("/api/auth", authRoute);
-app.use("/api/owners", ownerRoutes)
+// app.use("/api/owners", ownerRoutes)
 
 app.all("{*path}", (req, res) => {
   throw ApiError.notFound(`Route ${req.originalUrl} not found`);
 });
 
-app.use(errorHandler);
+// app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
@@ -103,6 +103,6 @@ app.put("/:id/:name", async (req, res) => {
     res.send(500);
   }
 });
-export default app;
+export {app,pool};
 
 app.listen(port, () => console.log("Server starting on port: " + port));
