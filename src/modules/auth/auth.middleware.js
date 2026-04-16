@@ -1,6 +1,6 @@
 import ApiError from "../../common/utiles/api-error.js";
 import { verifyAccessToken } from "../../common/utiles/jwt.utils.js";
-// import User from "./auth.model.js";
+
 import { pool } from "../../../index.js";
 // Authenticates using the short-lived access token (header or cookie)
 const authenticate = async (req, res, next) => {

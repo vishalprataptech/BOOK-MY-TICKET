@@ -1,5 +1,5 @@
 import crypto from "crypto";
-// import User from "./auth.model.js";
+
 import ApiError from "../../common/utiles/api-error.js";
 import {
   generateAccessToken,
@@ -7,15 +7,10 @@ import {
   verifyRefreshToken,
   generateResetToken,
 } from "../../common/utiles/jwt.utils.js";
-// import {
-//   sendVerificationEmail,
-//   sendResetPasswordEmail,
-// } from "../../common/config/email.js";
+
 import { pool } from "../../../index.js";
 import bcrypt from "bcryptjs";
-// import { Result } from "pg";
-// import { waitForDebugger } from "inspector";
-// import pool from "index.js"
+
 
 
 
@@ -34,20 +29,7 @@ const register = async ({ name, email, password, role }) => {
   const sqlU = "INSERT INTO users (name,email,password,role,verification_token) VALUES ($1,$2,$3,$4,$5) RETURNING *";
   const user = await pool.query(sqlU,[name,email,hashedPassword,role,hashedToken])
 
-  // const user = await User.create({
-  //   name,
-  //   email,
-  //   password,
-  //   role,
-  //   verificationToken: hashedToken,
-  // });
 
-  // Don't let email failure crash registration — user is already created
-  // try {
-  //   await sendVerificationEmail(email, rawToken);
-  // } catch (err) {
-  //   console.error("Failed to send verification email:", err.message);
-  // }
 
   const userObj = user.rows[0];
   delete userObj.password;
@@ -65,7 +47,7 @@ const user = await pool.query(sql,[email]);
   const dbUser = user.rows[0];
   const isMatch = await bcrypt.compare(password, dbUser.password);
 
-  // const isMatch = await user.comparePassword(password);
+
   if (!isMatch) throw ApiError.unauthorized("Invalid email or password");
 
   if (!dbUser.is_verified) {
@@ -79,7 +61,7 @@ const user = await pool.query(sql,[email]);
   const sqlU = "UPDATE users SET refresh_token=$1 WHERE email=$2";
   const refreshTokens = hashToken(refreshToken);
   await pool.query(sqlU,[refreshTokens,dbUser.email])
-  // await user.save({ validateBeforeSave: false });
+
 
   const userObj = user.rows[0];
   delete userObj.password;
@@ -88,7 +70,6 @@ const user = await pool.query(sql,[email]);
   return { user: userObj, accessToken, refreshToken };
 };
 
-// Issues a new access token using a valid refresh token
 const refresh = async (token) => {
   if (!token) throw ApiError.unauthorized("Refresh token missing");
 
@@ -96,7 +77,7 @@ const refresh = async (token) => {
 const sql = "SELECT * FROM users where user_id=$1";
 const user = await pool.query(sql,[decoded.id]);
 const result = user.rows[0];
-  // const user = await User.findById(decoded.id).select("+refreshToken");
+
   if (user.rowCount===0) throw ApiError.unauthorized("User no longer exists");
 
   // Verify the refresh token matches what's stored (prevents reuse of old tokens)
@@ -112,8 +93,7 @@ const result = user.rows[0];
 const logout = async (userId) => {
   const sql = "UPDATE users SET refresh_token=$1 where user_id=$2";
   await pool.query(sql,[null,userId])
-  // Clear stored refresh token so it can't be reused
-  // await User.findByIdAndUpdate(userId, { refreshToken: null });
+
 };
 
 const verifyEmail = async (token) => {
@@ -128,22 +108,12 @@ const verifyEmail = async (token) => {
   const hashedInput = hashToken(trimmed);
   const sql = "SELECT * FROM users where verification_token=$1";
   const user = await pool.query(sql,[hashedInput]);
-  // let user = await User.findOne({ verificationToken: hashedInput }).select(
-  //   "+verificationToken",
-  // );
-  // if (!user) {
-  //   user = await User.findOne({ verificationToken: trimmed }).select(
-  //     "+verificationToken",
-  //   );
-  // }
+
   if (user.rowCount===0) throw ApiError.badRequest("Invalid or expired verification token");
   const dbuser= user.rows[0]
 const sqlU = "UPDATE users SET is_verified=$1,verification_token=$2 where user_id=$3";
 await pool.query(sqlU,[true,null,dbuser.user_id]);
-  // await User.findByIdAndUpdate(user.user_id, {
-  //   $set: { isVerified: true },
-  //   $unset: { verificationToken: 1 },
-  // });
+
 
   return dbuser;
 };
@@ -151,21 +121,13 @@ await pool.query(sqlU,[true,null,dbuser.user_id]);
 const forgotPassword = async (email) => {
     const sql = "SELECT * FROM users where email=$1";
 const user = await pool.query(sql,[email]);
-  // const user = await User.findOne({ email });
+
   if (user.rowCount===0) throw ApiError.notFound("No account with that email");
 
   const { rawToken, hashedToken } = generateResetToken();
 const sqlU = "UPDATE users SET reset_password_token=$1,reset_password_expires=$2 where email=$3";
 await pool.query(sqlU,[hashedToken,Date.now() +15*60*1000,email]);
-  // user.resetPasswordToken = hashedToken;
-  // user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
-  // await user.save();
 
-  // try {
-  //   await sendResetPasswordEmail(email, rawToken);
-  // } catch (err) {
-  //   console.error("Failed to send reset email:", err.message);
-  // }
 };
 
 const resetPassword = async (token, newPassword) => {
@@ -173,25 +135,19 @@ const resetPassword = async (token, newPassword) => {
   const sql = "SELECT * FROM users where reset_password_token=$1 AND reset_password_expires>$2";
   const user = await pool.query(sql,[hashedToken,Date.now()]);
 
-  // const user = await User.findOne({
-  //   resetPasswordToken: hashedToken,
-  //   resetPasswordExpires: { $gt: Date.now() },
-  // }).select("+resetPasswordToken +resetPasswordExpires");
+
   const hashedPassword = await bcrypt.hash(newPassword, 10);
 
   if (user.rowCount===0) throw ApiError.badRequest("Invalid or expired reset token");
 const sqlU = "UPDATE users SET password=$1, reset_password_token=$2,reset_password_expires=$3 where reset_password_token=$4 AND reset_password_expires>$5";
 await pool.query(sqlU,[hashedPassword,null,null,hashedToken,Date.now()]);
-  // user.password = newPassword;
-  // user.resetPasswordToken = undefined;
-  // user.resetPasswordExpires = undefined;
-  // await user.save();
+
 };
 
 const getMe = async (userId) => {
   const sql = "SELECT * FROM users where user_id=$1";
   const user = await pool.query(sql,[userId]);
-  // const user = await User.findById(userId);
+
   if (user.rowCount===0) throw ApiError.notFound("User not found");
   return user.rows[0];
 };

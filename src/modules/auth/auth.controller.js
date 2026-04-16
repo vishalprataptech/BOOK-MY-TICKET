@@ -40,10 +40,6 @@ const logout = async (req, res) => {
     ApiResponse.ok(res, "Logged out successfully");
 };
 
-// const verifyEmail = async (req, res) => {
-//   await authService.verifyEmail(req.params.token);
-//   ApiResponse.ok(res, "Email verified successfully");
-// };
 
 const forgotPassword = async (req, res) => {
     await authService.forgotPassword(req.body.email);
