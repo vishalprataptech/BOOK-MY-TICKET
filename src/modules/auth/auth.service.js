@@ -50,9 +50,9 @@ const user = await pool.query(sql,[email]);
 
   if (!isMatch) throw ApiError.unauthorized("Invalid email or password");
 
-  if (!dbUser.is_verified) {
-    throw ApiError.forbidden("Please verify your email before logging in");
-  }
+  // if (!dbUser.is_verified) {
+  //   throw ApiError.forbidden("Please verify your email before logging in");
+  // }
 
   const accessToken = generateAccessToken({ id: dbUser.user_id, role: dbUser.role});
   const refreshToken = generateRefreshToken({ id: dbUser.user_id });
@@ -148,7 +148,7 @@ const getMe = async (userId) => {
   const sql = "SELECT * FROM users where user_id=$1";
   const user = await pool.query(sql,[userId]);
 
-  if (user.rowCount===0) throw ApiError.notFound("User not found");
+  if (user.rowCount===0) throw ApiError.notfound("User not found");
   return user.rows[0];
 };
 

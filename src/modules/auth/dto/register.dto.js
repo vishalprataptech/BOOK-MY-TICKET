@@ -12,7 +12,7 @@ class RegisterDto extends BaseDto {
         "Password must contain at least one uppercase letter and one digit",
       )
       .required(),
-    role: Joi.string().valid("customer", "seller").default("customer"),
+    role: Joi.string().valid("customer", "admin").default("customer"),
   });
 }
 

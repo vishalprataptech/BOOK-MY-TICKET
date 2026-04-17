@@ -22,7 +22,7 @@ const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     
-    ApiResponse.ok(res, "Login successful", { user, accessToken });
+    ApiResponse.ok(res, "Login successful", { user, accessToken ,refreshToken});
   };
   
 
