@@ -30,18 +30,18 @@ const port = process.env.PORT || 5000;
 // If you pick one connection out of the pool and release it
 // the pooler will keep that connection open for sometime to other clients to reuse
 const pool = new pg.Pool({
-  // host: "localhost",
-  // port: 5433,
-  // user: "postgres",
-  // password: "postgres",
-  // database: "sql_class_2_db",
-  // max: 20,
-  // connectionTimeoutMillis: 0,
-  // idleTimeoutMillis: 0,
-    connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  host: "localhost",
+  port: 5433,
+  user: "postgres",
+  password: "postgres",
+  database: "sql_class_2_db",
+  max: 20,
+  connectionTimeoutMillis: 0,
+  idleTimeoutMillis: 0,
+  //   connectionString: process.env.DATABASE_URL,
+  // ssl: {
+  //   rejectUnauthorized: false
+  // }
 });
 
 const app = new express();
@@ -52,15 +52,15 @@ app.use(cors());
 
 app.use("/api/auth", authRoute);
 
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
+});
 
 app.all("{*path}", (req, res) => {
   throw ApiError.notfound(`Route ${req.originalUrl} not found`);
 });
 
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
-});
 //get all seats
 app.get("/seats", async (req, res) => {
   const result = await pool.query("select * from seats"); // equivalent to Seats.find() in mongoose
